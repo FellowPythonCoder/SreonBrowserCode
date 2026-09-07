@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sreon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=VT323&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/glass.css" />
+<link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+
+<!-- Custom background layer (photo/video theme). Empty/hidden by default,
+     so the window stays truly transparent (see glass.css) until the
+     person picks a background in Settings. -->
+<div id="bg-layer">
+  <img id="bg-image" alt="" />
+  <video id="bg-video" autoplay loop muted playsinline></video>
+  <div id="bg-overlay"></div>
+</div>
+
+<!-- App lock — sits above everything, including native tab webviews
+     (those are hidden explicitly whenever this is shown). -->
+<div id="lock-overlay"></div>
+<div id="dialog-overlay"></div>
+
+<div id="shell">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="glass">
+    <div id="workspace-switcher">
+      <div id="workspace-pills"></div>
+      <button class="icon-btn" id="sidebar-collapse" title="Collapse sidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/><path d="M9 6l0 12" opacity="0"/></svg>
+      </button>
+    </div>
+
+    <div id="tab-list">
+      <div id="tab-indicator"></div>
+    </div>
+
+    <div id="new-tab-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      <span>New Tab</span>
+      <span style="margin-left:auto"><kbd>⌘T</kbd></span>
+    </div>
+
+    <div id="sidebar-footer">
+      <button id="brand-btn" title="About Sreon">
+        <img class="earth-cartoon" src="assets/sreon-logo.png" alt="Sreon" />
+        <span>Sreon</span>
+      </button>
+      <button class="icon-btn" id="cmdk-btn" title="Command palette (⌘K)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M9 8.5v7M9 8.5L7 10.5M9 8.5l2 2M15 15.5v-7"/></svg>
+      </button>
+      <button class="icon-btn" id="settings-btn" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 008.09 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H2a2 2 0 110-4h.09A1.65 1.65 0 003.6 8.6a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H8a1.65 1.65 0 001-1.51V2a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V8a1.65 1.65 0 001.51 1H22a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main id="main">
+    <div id="toolbar" class="glass-thin" style="border-radius: var(--radius); position: relative;">
+      <div id="load-progress"></div>
+      <div id="nav-group">
+        <button class="icon-btn" id="back-btn" title="Back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <button class="icon-btn" id="fwd-btn" title="Forward">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button class="icon-btn" id="reload-btn" title="Reload">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        </button>
+      </div>
+
+      <div id="addr-wrap">
+        <form id="addr-form">
+          <svg id="addr-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <input id="addr-input" type="text" placeholder="Search Sreon or enter address" autocomplete="off" spellcheck="false" />
+          <button type="button" id="addr-clear" title="Clear">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </form>
+        <div id="addr-suggest" class="suggest-dropdown glass"></div>
+      </div>
+
+      <button class="icon-btn" id="bookmark-toggle" title="Bookmark this page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+      </button>
+
+      <button class="icon-btn" id="open-system-btn" title="Open in system browser">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><path d="M15 3h6v6M10 14L21 3"/></svg>
+      </button>
+    </div>
+
+    <div id="view-stack">
+      <div id="start-page" class="active">
+      <div class="start-brand">
+        <img class="earth-logo earth-cartoon" src="assets/sreon-logo.png" alt="Sreon" />
+        <div class="brand">Sreon</div>
+      </div>
+
+      <div class="dash-tabs">
+        <div class="dash-tab active" data-dash-tab="dashboard">Dashboard</div>
+        <div class="dash-tab" data-dash-tab="media">Media</div>
+        <div class="dash-tab" data-dash-tab="performance">Performance</div>
+        <div class="dash-tab" data-dash-tab="weather">Weather</div>
+      </div>
+      <div id="dash-widgets"></div>
+
+        <form id="start-form" style="position:relative;">
+          <div id="start-addr-form" class="glass start-search-bar">
+            <svg class="start-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input id="start-addr-input" type="text" placeholder="Search Sreon or enter address" autocomplete="off" spellcheck="false" />
+            <button type="submit" class="start-search-go" title="Search">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+          <div id="start-addr-suggest" class="suggest-dropdown glass"></div>
+        </form>
+      </div>
+      <!-- .view-frame iframes injected here by app.js -->
+      <div id="search-brand-bar">
+        <img class="earth-cartoon" src="assets/sreon-logo.png" alt="Sreon" />
+        <span id="search-brand-label">Sreon Search</span>
+        <span id="search-brand-query"></span>
+      </div>
+      <div id="frame-loading"><span class="frame-loading-spin"></span></div>
+      <div id="frame-blocked">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--accent)"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        <div>
+          <strong style="display:block;margin-bottom:6px;">This site can't be embedded here</strong>
+          <p>You're viewing Sreon's browser preview, which renders pages in an &lt;iframe&gt; and inherits the same restrictions any website has embedding another one. The real desktop app doesn't have this limitation — it loads every tab as a genuine page, not a frame. Open this one in your default browser instead.</p>
+        </div>
+        <button class="btn-primary" id="frame-blocked-open">Open in System Browser</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Settings -->
+<div id="settings-overlay"></div>
+
+<!-- Command palette -->
+<div id="cmdk-overlay"></div>
+<div id="cmdk-panel" class="glass">
+  <form id="cmdk-form">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <input id="cmdk-input" type="text" placeholder="Type a command…" autocomplete="off" spellcheck="false" />
+    <kbd>esc</kbd>
+  </form>
+  <div id="cmdk-list"></div>
+</div>
+
+<!-- About / Sreonfetch -->
+<div id="about-overlay"></div>
+<div id="about-panel" class="glass">
+  <button class="icon-btn" id="about-close" style="position:absolute; top:14px; right:14px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <div id="about-body"></div>
+</div>
+<div id="settings-panel" class="glass">
+  <div id="settings-panel-header">
+    <h2>Settings</h2>
+    <button class="icon-btn" id="settings-close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div id="settings-panel-body">
+  <div id="settings-panel-inner">
+
+  <div class="settings-group">
+    <h3>Theme</h3>
+    <div class="swatch-row" id="opt-accent-swatches">
+      <button class="swatch" data-color="#22c55e" style="--sw: #22c55e" title="Earth Green"></button>
+      <button class="swatch" data-color="#3d8bff" style="--sw: #3d8bff" title="Ocean Blue"></button>
+      <button class="swatch" data-color="#8b5cf6" style="--sw: #8b5cf6" title="Violet"></button>
+      <button class="swatch" data-color="#f97316" style="--sw: #f97316" title="Sunset Orange"></button>
+      <button class="swatch" data-color="#ec4899" style="--sw: #ec4899" title="Rose"></button>
+      <button class="swatch" data-color="#14b8a6" style="--sw: #14b8a6" title="Teal"></button>
+      <button class="swatch" data-color="#eab308" style="--sw: #eab308" title="Gold"></button>
+      <button class="swatch" data-color="#64748b" style="--sw: #64748b" title="Slate"></button>
+      <label class="swatch swatch-custom" title="Custom color">
+        <input type="color" id="opt-accent-custom" />
+      </label>
+    </div>
+    <span class="badge-accent" id="theme-badge">Earth Glass</span>
+  </div>
+
+  <div class="settings-group">
+    <h3>Theme from photo</h3>
+    <p class="field-hint">Just picks an accent color from the photo. To use the photo or a video as the actual background, see "Background" below.</p>
+    <div class="field">
+      <label for="opt-theme-photo">Upload a photo to derive the browser theme</label>
+      <input type="file" id="opt-theme-photo" accept="image/*" />
+    </div>
+    <div class="field" style="display:flex;gap:8px;align-items:center;">
+      <button class="btn-primary" id="opt-theme-photo-apply" disabled>Apply theme from photo</button>
+      <div id="opt-theme-photo-preview" style="flex:1; max-width:120px;"></div>
+    </div>
+  </div>
+
+  <div class="settings-group">
+    <h3>Background</h3>
+    <p class="field-hint">Set the whole browser background to a solid glass look, or your own photo or video. This applies behind every panel — the frosted glass blurs whatever you pick, just like it blurs your desktop.</p>
+    <div class="bg-mode-row" id="opt-bg-mode">
+      <button class="bg-mode-btn active" data-mode="glass">Glass (default)</button>
+      <button class="bg-mode-btn" data-mode="image">Photo</button>
+      <button class="bg-mode-btn" data-mode="video">Video</button>
+    </div>
+    <div class="field" id="opt-bg-upload-wrap" style="display:none;">
+      <input type="file" id="opt-bg-file" accept="image/*,video/*" />
+      <p class="field-hint" id="opt-bg-file-hint">Large videos may not be saved for next launch — a short clip or an image works best.</p>
+    </div>
+    <div class="field" id="opt-bg-tune-wrap" style="display:none;">
+      <div class="field-row"><label for="opt-bg-dim">Darken for readability</label><span class="slider-val" id="opt-bg-dim-val">35%</span></div>
+      <input type="range" id="opt-bg-dim" min="0" max="85" value="35" />
+      <div class="field-row"><label for="opt-bg-blur">Background blur</label><span class="slider-val" id="opt-bg-blur-val">0px</span></div>
+      <input type="range" id="opt-bg-blur" min="0" max="40" value="0" />
+    </div>
+    <button class="btn-secondary" id="opt-bg-clear" style="display:none;">Remove custom background</button>
+  </div>
+
+  <div class="settings-group">
+    <h3>Privacy &amp; Security</h3>
+    <label class="toggle-row" for="opt-adblock">
+      <span>Block ads &amp; trackers</span>
+      <span class="switch"><input type="checkbox" id="opt-adblock" /><span class="switch-track"></span></span>
+    </label>
+    <p class="field-hint">Blocks ad/tracker domains and hides leftover ad boxes. Applies immediately, including to the tab you're on.</p>
+    <button type="button" class="btn-secondary" id="opt-adblock-test" style="margin-top:8px;">Test ad blocker</button>
+    <p class="field-hint">Opens a local test page to check it's working.</p>
+
+    <label class="toggle-row" for="opt-darkmode" style="margin-top:14px;">
+      <span>Cream sidebar</span>
+      <span class="switch"><input type="checkbox" id="opt-darkmode" /><span class="switch-track"></span></span>
+    </label>
+    <p class="field-hint">Warm cream theme for Sreon's own sidebar and panels. Doesn't change how websites look.</p>
+
+    <label class="toggle-row" for="opt-privacy" style="margin-top:14px;">
+      <span>Privacy Mode (block IP leaks)</span>
+      <span class="switch"><input type="checkbox" id="opt-privacy" /><span class="switch-track"></span></span>
+    </label>
+    <p class="field-hint">Blocks WebRTC IP leaks, spoofs your timezone, refuses location requests, strips your referrer, and adds fingerprinting noise. Doesn't replace a VPN — sites still see the IP that connected. Applies immediately, including to the tab you're on.</p>
+
+    <div class="field-row" style="margin-top:14px;">
+      <label for="opt-proxy">Proxy (changes the IP sites see)</label>
+      <button type="button" class="btn-secondary" id="opt-use-tor" style="padding:4px 10px;font-size:11.5px;">Use Tor</button>
+    </div>
+    <input type="text" id="opt-proxy" placeholder="socks5://127.0.0.1:9050 (Tor) or http://host:port" />
+    <p class="field-hint">Optional. Any SOCKS5/HTTP proxy works — Tor isn't required. Leave blank to connect directly.</p>
+    <p class="field-hint">"Use Tor" just fills in Tor's local port; you still need Tor running yourself.</p>
+
+    <label class="toggle-row" for="opt-performance" style="margin-top:14px;">
+      <span>Performance Mode</span>
+      <span class="switch"><input type="checkbox" id="opt-performance" /><span class="switch-track"></span></span>
+    </label>
+    <p class="field-hint">Cuts glass blur and widget animations for a snappier feel on lower-end machines. Takes effect immediately.</p>
+
+    <div class="field-row" style="margin-top:14px;">
+      <label for="opt-lock-theme">Lock screen theme</label>
+    </div>
+    <div id="opt-lock-theme" class="bg-mode-row lock-theme-row">
+      <button class="bg-mode-btn" data-lock-theme="accent">Match accent</button>
+      <button class="bg-mode-btn" data-lock-theme="aurora">Aurora</button>
+      <button class="bg-mode-btn" data-lock-theme="midnight">Midnight</button>
+      <button class="bg-mode-btn" data-lock-theme="sunset">Sunset</button>
+      <button class="bg-mode-btn" data-lock-theme="custom">Custom color</button>
+    </div>
+    <input type="color" id="opt-lock-custom-color" value="#3d8bff" style="display:none; margin-top:8px;" />
+    <p class="field-hint">Controls the color scheme and backdrop of the lock screen (widgets, clock, avatar glow) independently of the rest of the app.</p>
+
+    <div class="field-row" style="margin-top:14px;">
+      <label>Lock screen background</label>
+    </div>
+    <div class="bg-mode-row" id="opt-lock-bg-mode">
+      <button class="bg-mode-btn active" data-lock-bg-mode="theme">Theme (default)</button>
+      <button class="bg-mode-btn" data-lock-bg-mode="image">Photo</button>
+      <button class="bg-mode-btn" data-lock-bg-mode="video">Video</button>
+    </div>
+    <div class="field" id="opt-lock-bg-upload-wrap" style="display:none;">
+      <input type="file" id="opt-lock-bg-file" accept="image/*,video/*" />
+      <p class="field-hint">Set separately from your regular tab background — the lock screen can look completely different if you want.</p>
+    </div>
+    <div class="field" id="opt-lock-bg-tune-wrap" style="display:none;">
+      <div class="field-row"><label for="opt-lock-bg-blur">Background blur</label><span class="slider-val" id="opt-lock-bg-blur-val">0px</span></div>
+      <input type="range" id="opt-lock-bg-blur" min="0" max="40" value="0" />
+    </div>
+    <button class="btn-secondary" id="opt-lock-bg-clear" style="display:none;">Remove custom lock background</button>
+
+    <div id="lock-settings-block">
+      <div class="field-row" style="margin-top:14px;">
+        <span id="lock-status-label">Checking lock status…</span>
+      </div>
+      <div id="lock-settings-controls"></div>
+    </div>
+
+    <p class="field-hint" style="margin-top:14px;">Sreon keeps no analytics, no telemetry, and no account — everything above lives only in this app's local data on this device. See PRIVACY.txt in the app folder for the full rundown.</p>
+
+    <details class="privacy-explainer">
+      <summary>How Sreon protects your data — full details</summary>
+      <div class="privacy-explainer-body">
+        <h4>Saved passwords, bookmarks &amp; history</h4>
+        <p>Encrypted with AES-256-GCM before they ever touch disk. The encryption key is derived from your workspace password using PBKDF2 (210,000 rounds of SHA-256) — the same approach dedicated password managers use. The password itself is never stored anywhere, in any form; only a salted hash is kept, just to check a later attempt against. If a workspace has no password, its data is still encrypted (never plain text), using a random key generated once on this device — set a workspace password if you want that data to require something only you know.</p>
+        <h4>Per-workspace isolation</h4>
+        <p>Personal and Work each get their own password and their own encryption key. Unlocking one workspace does not decrypt the other's data.</p>
+        <h4>IP address &amp; location</h4>
+        <p>Privacy Mode blocks the WebRTC APIs pages use to leak your real IP address behind a VPN/proxy, and refuses page requests for your geolocation outright. A proxy/Tor address in the field above is the only thing that changes what IP a site actually sees at the network level — no in-page toggle can do that on its own.</p>
+        <h4>What never leaves this device</h4>
+        <p>Nothing. Sreon has no account, no sync server, and sends no analytics or telemetry anywhere. Everything described here lives only in this app's local data folder on this computer.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="settings-group">
+    <h3>Workspaces</h3>
+    <p class="field-hint">Give Personal and Work their own color and password. A password locks that workspace's logins, bookmarks, and history behind it.</p>
+    <div id="workspace-settings-list"></div>
+  </div>
+
+  <div class="settings-group">
+    <h3>Bookmarks</h3>
+    <div id="bookmark-list" class="bookmark-list"></div>
+    <form id="bookmark-add-form" class="vault-add-form">
+      <input type="text" id="bookmark-url" placeholder="https://example.com" autocomplete="off" required />
+      <input type="text" id="bookmark-title" placeholder="Title (optional)" autocomplete="off" />
+      <div class="swatch-row" id="bookmark-color-row">
+        <input type="color" id="bookmark-color" value="#3d8bff" />
+      </div>
+      <button type="submit" class="btn-primary">Add bookmark</button>
+    </form>
+  </div>
+
+  <div class="settings-group">
+    <h3>Frost</h3>
+    <div class="field">
+      <div class="field-row"><label for="opt-blur">Blur</label><span class="slider-val" id="opt-blur-val">34px</span></div>
+      <input type="range" id="opt-blur" min="6" max="56" value="34" />
+    </div>
+    <div class="field">
+      <div class="field-row"><label for="opt-opacity">Frost opacity</label><span class="slider-val" id="opt-opacity-val">30%</span></div>
+      <input type="range" id="opt-opacity" min="8" max="75" value="30" />
+    </div>
+    <div class="field">
+      <div class="field-row"><label for="opt-radius">Corner radius</label><span class="slider-val" id="opt-radius-val">20px</span></div>
+      <input type="range" id="opt-radius" min="6" max="32" value="20" />
+    </div>
+  </div>
+
+  <div class="settings-group">
+    <h3>Browsing</h3>
+    <div class="field">
+      <label for="opt-search">Search engine</label>
+      <select id="opt-search">
+        <option value="https://www.google.com/search?q=">Google (default)</option>
+        <option value="https://html.duckduckgo.com/html/?q=">Sreon (DuckDuckGo, private)</option>
+        <option value="https://www.bing.com/search?q=">Bing</option>
+      </select>
+      <p class="field-hint">All three load right inside Sreon — search results, Google included, are real native pages now, not an embedded frame a site can refuse.</p>
+    </div>
+    <div class="field">
+      <label for="opt-home">Homepage</label>
+      <input type="text" id="opt-home" placeholder="sreon://start" />
+    </div>
+    <label class="toggle-row" for="opt-suggestions">
+      <span>Show suggestions while typing</span>
+      <span class="switch"><input type="checkbox" id="opt-suggestions" /><span class="switch-track"></span></span>
+    </label>
+    <p class="field-hint">Sends what you type to your search engine as you type it, so it can suggest completions. Off means nothing pops up at all. Automatically stays off while Privacy Mode is on.</p>
+    <label class="toggle-row" for="opt-restore">
+      <span>Restore tabs on launch</span>
+      <span class="switch"><input type="checkbox" id="opt-restore" /><span class="switch-track"></span></span>
+    </label>
+  </div>
+
+  <div class="settings-group">
+    <h3>Motion</h3>
+    <label class="toggle-row" for="opt-reduce-motion">
+      <span>Reduce animations</span>
+      <span class="switch"><input type="checkbox" id="opt-reduce-motion" /><span class="switch-track"></span></span>
+    </label>
+  </div>
+
+  <div class="settings-group">
+    <h3>Passwords</h3>
+    <p class="field-hint">Saved locally on this device. Drag any toolbar or sidebar button around to rearrange your layout — it's all customizable.</p>
+    <div id="vault-list" class="vault-list"></div>
+    <form id="vault-add-form" class="vault-add-form">
+      <input type="text" id="vault-site" placeholder="Site (e.g. example.com)" autocomplete="off" required />
+      <input type="text" id="vault-user" placeholder="Username or email" autocomplete="off" required />
+      <input type="password" id="vault-pass" placeholder="Password" autocomplete="off" required />
+      <button type="submit" class="btn-primary">Save login</button>
+    </form>
+  </div>
+
+  <div class="settings-group">
+    <h3>History
+      <button class="btn-secondary" id="history-clear" style="float:right;">Clear all</button>
+    </h3>
+    <div id="history-list" class="history-list"></div>
+  </div>
+
+  <div class="settings-group">
+    <h3>Data</h3>
+    <button class="btn-secondary" id="opt-clear-data">Clear tabs &amp; reset settings</button>
+    <p class="field-hint">Resets appearance/behavior settings and closes tabs. Keeps your passwords, history, and bookmarks.</p>
+    <button class="btn-secondary" id="opt-delete-all-data" style="margin-top:8px;color:#c0392b;">Delete all data</button>
+    <p class="field-hint">Permanently erases everything Sreon has stored on this device — saved passwords, history, bookmarks, lock passwords, and all settings. This can't be undone.</p>
+  </div>
+
+  <div class="settings-group">
+    <h3>Shortcuts</h3>
+    <div class="field-row"><span>New tab</span><kbd>⌘T</kbd></div>
+    <div class="field-row"><span>Close tab</span><kbd>⌘W</kbd></div>
+    <div class="field-row"><span>Focus address bar</span><kbd>⌘L</kbd></div>
+  </div>
+
+  </div>
+  </div>
+</div>
+
+<script src="js/widgets.js"></script>
+<script src="js/crypto.js"></script>
+<script src="js/secure-store.js"></script>
+<script src="js/dialog.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/lock.js"></script>
+<script src="js/tour.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+SREON — PRIVACY REPORT
+====================
+Plain-language summary of exactly what Sreon stores, where, and what it
+blocks. Everything below is true of the code in this folder — there is
+no hidden analytics SDK, no crash reporter, no "phone home" of any kind
+anywhere in this project.
+
+
+1. WHAT SREON NEVER DOES
+-----------------------
+- No telemetry, analytics, or usage tracking of you, ever.
+- No account, no sign-in, no cloud sync — Sreon doesn't know who you are.
+- No data leaves your computer as a side effect of using Sreon itself.
+  (The pages you visit can still talk to their own servers, same as
+  any browser — Sreon doesn't add anything on top of that.)
+- No OS-level or in-page notifications. Sreon doesn't show any itself,
+  and it silently denies every website's request for notification
+  permission — you'll never get a permission popup for this.
+
+
+2. WHAT SREON STORES, AND WHERE
+------------------------------
+Everything is local to this device only.
+
+  Browsing history        localStorage inside the app          AES-256-GCM encrypted
+  Saved site logins       localStorage inside the app          AES-256-GCM encrypted
+  Bookmarks                localStorage inside the app          AES-256-GCM encrypted
+  Settings & theme        localStorage inside the app          plain text (no secrets)
+  App lock password       a small file in Sreon's app-data       salted SHA-256
+                           folder on this device                hash only
+  Workspace passwords     a small file in Sreon's app-data       salted SHA-256
+   (Personal / Work)       folder on this device                hash only, one per workspace
+
+Saved logins, bookmarks, and history are encrypted with AES-256-GCM
+before they're written to disk. The encryption key for each workspace
+(Personal, Work) is derived from that workspace's password using
+PBKDF2 (210,000 rounds of SHA-256) — the password itself is never
+stored, only used in memory, on the fly, to derive the key. If a
+workspace has no password set, its data is still encrypted (never
+plain text) using a random key generated once for this device and
+kept in Sreon's local app-data folder — set a workspace password if you
+want that data to require something only you know, rather than just
+"access to this device's Sreon folder."
+
+Personal and Work are fully isolated from each other: unlocking one
+workspace's password never decrypts the other's saved data.
+
+The app lock password and each workspace password are handled the
+same way on purpose: salted and hashed with SHA-256 before they ever
+touch disk, so the real password is never written down anywhere, even
+locally. Sreon can check whether a password you type matches, but it
+cannot show you the password back — including to its own developers.
+There is no way to recover a forgotten workspace password; resetting
+it starts that workspace's saved data fresh, since there's no
+technical way to decrypt data without the key the forgotten password
+derived.
+
+
+3. IP ADDRESS & LOCATION
+--------------------------
+Settings > Privacy & Security > "Privacy Mode" (on by default):
+  - Disables the WebRTC APIs pages use to leak your real IP address
+    from behind a VPN/proxy — the most common real-world IP leak.
+  - Refuses every page's request for your geolocation outright.
+  - Adds noise to canvas reads so canvas fingerprinting can't build a
+    stable device ID, and rounds off hardware details (CPU core count,
+    device memory) that are otherwise used to fingerprint your device.
+  - Strips the outgoing referrer.
+A proxy or Tor SOCKS address entered in the same section is the only
+thing that changes what IP address a site's server actually sees —
+that's decided at the network layer, and no in-page toggle can
+replicate it. Privacy Mode and a proxy are complementary, not
+substitutes for each other.
+
+
+4. AD & TRACKER BLOCKING
+--------------------------
+When "Block ads & trackers" is on in Settings > Privacy & Security
+(on by default), Sreon:
+  - Refuses to navigate to a fixed, local list of well-known
+    advertising/analytics/tracking domains (things like doubleclick.net,
+    google-analytics.com, googletagmanager.com, and similar).
+  - Hides a handful of the most common leftover ad-container elements
+    on pages that still load.
+  - Ignores window.open() popups aimed at those same domains.
+
+This list ships inside the app itself — checking it never involves a
+network request, so turning the feature on or off never sends
+anything anywhere either.
+
+This is a lightweight, local blocklist, not a full replacement for a
+dedicated ad-blocking extension — some ads will still get through on
+sites with many different ad vendors.
+
+Settings > Privacy & Security > "Test ad blocker" opens a local test
+page (also just a data: page — no network request) that checks the
+popup blocker, the ad-container hider, and notification blocking live,
+in a real tab, and shows a running total of what's been blocked this
+session.
+
+Sreon's default search engine is Google, since that's what most people
+expect out of the box. Settings > General > Search engine also offers
+DuckDuckGo (labeled "Sreon") if you'd rather your searches not go
+through Google at all, and Bing.
+
+
+5. WHAT SREON SHOWS THE SITES YOU VISIT
+----------------------------------------
+Each tab is a real, separate native browser view (not an iframe), so
+sites see a normal browser request — Sreon doesn't inject a custom user
+agent, fingerprint, or any other identifying marker beyond what your
+OS's built-in web engine (WebKit/WebView2/WebKitGTK) already sends for
+any app that embeds it. With Privacy Mode on (see section 3), several
+of the more identifying signals are additionally blocked or blurred.
+
+
+6. YOUR CONTROLS
+------------------
+Settings > Privacy & Security lets you:
+  - Turn ad & tracker blocking, dark mode, and Privacy Mode on or off.
+  - Set a proxy/Tor address.
+  - Set, change, remove, or reset the app lock password.
+  - Lock Sreon immediately (also available as a keyboard shortcut).
+  - Read the full "How Sreon protects your data" explainer inline.
+Settings > Workspaces lets you set a separate password and color for
+Personal and Work.
+Settings > Bookmarks lets you save, color-tag, and remove bookmarks.
+Settings > History lets you clear all browsing history in one click.
+Settings > Data lets you wipe tabs and reset every setting.
+
+Removing the app folder / uninstalling Sreon removes all of the above —
+there is nothing left behind on a server anywhere, because nothing
+was ever sent to one.

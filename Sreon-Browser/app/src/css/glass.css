@@ -1,0 +1,136 @@
+/* ============================================================
+   Sreon — Earth Glass design tokens
+   Default accent is Earth Green, but every accent value below is
+   just a CSS variable — settings.js can repoint --accent (and the
+   derived --accent-strong/-soft/-glow) to any color the person
+   picks, live, no rebuild needed. This file only sets the
+   fallback/default values.
+
+   IMPORTANT for real see-through transparency:
+   html/body stay fully transparent so the OS window's
+   `transparent: true` setting can show the desktop behind Sreon.
+   Each panel gets its own frost via backdrop-filter blur, which
+   blurs whatever is actually behind the window (desktop, other
+   apps) — not a fake painted background. Keep this file free of
+   any full-bleed opaque background layers.
+   ============================================================ */
+
+:root {
+  /* --- Core accent palette (default: Sreon Violet) --- */
+  --accent: #6d1ee0;
+  --accent-strong: #5615b3;
+  --accent-soft: rgba(109, 30, 224, 0.35);
+  --accent-glow: rgba(109, 30, 224, 0.55);
+
+  /* --- Lock-screen theme (independent of the app accent by default) --- */
+  --lock-accent: #6d1ee0;
+  --lock-accent-strong: #5615b3;
+  --lock-accent-soft: rgba(109, 30, 224, 0.35);
+  --lock-accent-glow: rgba(109, 30, 224, 0.55);
+
+  /* --- Base surface tint (mostly opaque cream — minimal glass) --- */
+  --surface-rgb: 250, 244, 230;
+  --surface-rgb-raised: 253, 249, 240;
+
+  /* --- Minimal glass tuning: light frost, mostly solid cream panels --- */
+  --glass-opacity: 0.94;
+  --glass-opacity-strong: 0.98;
+  --glass-blur: 8px;
+  --glass-blur-soft: 4px;
+  --glass-border: rgba(109, 30, 224, 0.18);
+  --glass-border-bright: rgba(109, 30, 224, 0.32);
+  --glass-highlight: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 8px 24px rgba(109, 30, 224, 0.12), 0 1px 4px rgba(40, 10, 80, 0.08);
+
+  /* --- Shape --- */
+  --radius: 20px;
+  --radius-sm: 12px;
+  --radius-pill: 999px;
+
+  /* --- Text --- */
+  --text-primary: #2a1447;
+  --text-secondary: rgba(42, 20, 71, 0.68);
+  --text-tertiary: rgba(42, 20, 71, 0.44);
+
+  /* --- Cream card background used by settings groups / widget cards --- */
+  --glass-bg: rgba(var(--surface-rgb-raised), 0.9);
+
+  /* --- Motion --- */
+  --ease-glass: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 130ms;
+  --dur-med: 240ms;
+  --dur-slow: 420ms;
+}
+
+html, body {
+  background: transparent !important;
+}
+
+/* Base glass panel — the reusable "liquid glass" surface.
+   Real transparency comes from the OS window; this just frosts
+   and tints whatever is showing through. */
+/* Base panel — mostly solid cream card with a light border, minimal
+   blur. Kept the .glass class name so nothing else needs renaming. */
+.glass {
+  background:
+    linear-gradient(180deg, var(--glass-highlight), transparent 65%),
+    rgba(var(--surface-rgb-raised), var(--glass-opacity));
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--radius);
+}
+
+.glass-thin {
+  background: rgba(var(--surface-rgb), var(--glass-opacity));
+  backdrop-filter: blur(var(--glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft));
+  border: 1px solid var(--glass-border);
+}
+
+/* A very light blue tint drifting behind the glass panels — cheap
+   (no blur filter of its own; the panels' backdrop-filter does the
+   expensive work) so it stays fast and still lets the desktop
+   underneath read through clearly. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(55% 45% at 12% 8%, var(--accent-soft), transparent 60%),
+    radial-gradient(45% 40% at 92% 88%, var(--accent-soft), transparent 60%);
+  opacity: 0.25;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+}
+
+/* User-controlled "Reduce animations" toggle in Settings — separate from
+   the OS-level prefers-reduced-motion media query above, since some
+   people want fewer animations without having that OS setting on. */
+html[data-reduce-motion="true"] *,
+html[data-reduce-motion="true"] *::before,
+html[data-reduce-motion="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: rgba(150, 190, 255, 0.28);
+  border-radius: var(--radius-pill);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(150, 190, 255, 0.45); background-clip: padding-box; }
