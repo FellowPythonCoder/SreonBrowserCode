@@ -71,27 +71,7 @@ theme — including using your own photo or video as the background.
   now-playing card, and basic device info, with staggered fade/float-in
   animations. All cosmetic widgets, all client-side.
 
-## Building for git / distribution
 
-This is a **Tauri desktop app** (Windows/macOS/Linux) — there is no
-`.ipa` here, since `.ipa` is an iOS package format and this codebase
-isn't a mobile app.
-
-1. `cd app && npm install`
-2. `npm run dev` — runs it locally for testing.
-3. `npm run build` — produces installers in `app/src-tauri/target/release/bundle/`:
-   - Windows: `.msi` / `.exe` (must be built on Windows, or cross-compiled)
-   - macOS: `.dmg` / `.app` (must be built on macOS)
-   - Linux: `.AppImage` / `.deb`
-4. Before committing, add a `.gitignore` (if not already present) with:
-   ```
-   app/node_modules/
-   app/src-tauri/target/
-   ```
-   Never commit `target/` or `node_modules/` — both are huge, regenerated
-   locally by `npm install` + `npm run build`.
-5. `git init && git add . && git commit -m "Sreon browser"` then push to
-   your remote as usual.
 
 ## What makes Sreon different
 
